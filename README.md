@@ -1,0 +1,1 @@
+# NtRaiseHardError-Example
