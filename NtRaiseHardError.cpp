@@ -20,7 +20,7 @@ NTSTATUS Set_Privilege(ULONG perm, BOOLEAN enable, BOOLEAN current_thread)
     }
     else
     {
-        return STATUS_NOTIFY_CLEANUP;
+        return STATUS_DLL_INIT_FAILED;
     }
 }
 
@@ -34,7 +34,7 @@ NTSTATUS Trigger_BSOD(NTSTATUS Error_Code)
     }
     else
     {
-        return STATUS_NOTIFY_CLEANUP;
+        return STATUS_DLL_INIT_FAILED;
     }
 }
 
@@ -56,6 +56,7 @@ VOID main()
 
     // Cleanup code
     Cleanup:
-    if (ntdll) { FreeLibrary(ntdll); }
+    if (ntdll) 
+        FreeLibrary(ntdll);
     ExitProcess(1);
 }
