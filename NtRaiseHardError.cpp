@@ -30,7 +30,7 @@ NTSTATUS Trigger_BSOD(NTSTATUS Error_Code)
     if (NtRaiseHardError != NULL)
     {
         ULONG response;
-        return NtRaiseHardError(Error_code, 0, 0, 0, 6, &response);
+        return NtRaiseHardError(Error_Code, NULL, NULL, NULL, 6, &response);
     }
     else
     {
