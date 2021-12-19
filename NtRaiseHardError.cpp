@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include <winternl.h>
+#include <ntstatus.h>
 
 // Declaration of RtlAdjustPrivilege and NtRaiseHardError
 typedef NTSTATUS(NTAPI* pdef_RtlAdjustPrivilege)(ULONG Privilege, BOOLEAN Enable, BOOLEAN CurrentThread, PBOOLEAN Enabled);
