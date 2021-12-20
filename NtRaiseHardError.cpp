@@ -50,7 +50,7 @@ VOID main()
         Trigger_BSOD(0xC0000350); // 0xC0000350 = STATUS_HOST_DOWN, The transport determined that the remote system is down. 
     }
 
-    if (ntdll != 0) 
+    if (ntdll != NULL) 
         FreeLibrary(ntdll);
     ExitProcess(1);
 }
